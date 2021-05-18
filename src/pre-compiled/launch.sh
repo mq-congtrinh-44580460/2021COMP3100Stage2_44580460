@@ -8,7 +8,7 @@ if [ $# -lt 2 ]; then
     echo "Usage: -c configDir"
     exit
 else
-    javac DSClient.java parser/JobSpec.java parser/Parser.java parser/ServerSpec.java scheduler/Scheduler.java
+    javac Client.java parser/JobSpec.java parser/Parser.java parser/ServerSpec.java scheduler/Scheduler.java
 fi
 
 while getopts "c:" opt;
@@ -54,7 +54,7 @@ for conf in $configDir/*.xml; do
 		./ds-server -c $conf -v brief -n > $conf.your.log&
 	fi
 	sleep 1	
-    java DSClient
+    java Client
 	sleep 1
 	diff $conf.ref.log $conf.your.log > $configDir/temp.log
 	if [ -s $configDir/temp.log ]; then
@@ -69,7 +69,7 @@ for conf in $configDir/*.xml; do
 done
 
 if [ -f DSClient.class ]; then
-	rm DSClient.class
+	rm Client.class
 	rm parser/JobSpec.class
 	rm parser/Parser.class
     rm parser/ServerSpec.class

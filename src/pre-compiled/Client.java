@@ -4,7 +4,7 @@ import java.util.*;
 import parser.*;
 import scheduler.*;
 
-public class DSClient {
+public class Client {
     public static final String DEFAULT_HOST = "127.0.0.1";
     public static final int DEFAULT_PORT = 50000;
     public static final String HELO = "HELO";
@@ -30,6 +30,10 @@ public class DSClient {
 
     public static void main(String[] args) throws Exception {
         Socket s = null;
+        String algo = "";
+        if (args.length > 1 && args[0] == "-a"){
+            algo = args[1];
+        }
 
         try {
             s = new Socket(DEFAULT_HOST, DEFAULT_PORT);
@@ -62,6 +66,8 @@ public class DSClient {
                 if (request.startsWith(AUTH) && response.equals(OK)) {
                     servers = Parser.parseServer();
 
+                    servers = Scheduler.sortAsc(servers);
+
                     request = REDY;
                     send(out, request);
                     continue;
@@ -75,8 +81,13 @@ public class DSClient {
 
                         if (job[0].equals(JOBN)) {
                             jobSpec = Parser.parseJob(job);
-
-                            request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
+                            
+                            if (algo == "wf" || algo == "bf"){
+                                request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
+                            }
+                            else if (algo == "ff"){
+                                request = GETS + " Avail " + job[4] + " " + job[5] + " " + job[6];
+                            }
                         }
                     }
                     send(out, request);
@@ -97,11 +108,21 @@ public class DSClient {
 
                 if (request.equals(OK)) {
                     if (response.equals(DOT)) {
-                        if (nRecs == servers.size()) {
-                            scheduled = Scheduler.allToLargest(servers);
-                        } else {
-                            scheduled = Scheduler.allToLargest(capables);
+                        // if (nRecs == servers.size()) {
+                        //     scheduled = Scheduler.allToLargest(servers);
+                        // } else {
+                        //     scheduled = Scheduler.allToLargest(capables);
+                        // }
+                        if (algo == "wf"){
+                            scheduled = Scheduler.worstFit(capables, jobSpec.getCore());
                         }
+                        else if (algo == "bf"){
+                            // scheduled = Scheduler
+                        } 
+                        else if (algo == "ff"){
+                            
+                        }
+                        scheduled = Scheduler.toCapabSpec(capables);
                         capables.clear();
                         counter = 0;
 
