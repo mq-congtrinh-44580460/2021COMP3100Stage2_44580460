@@ -31,7 +31,7 @@ public class Client {
     public static void main(String[] args) throws Exception {
         Socket s = null;
         String algo = "";
-        if (args.length > 1 && args[0] == "-a"){
+        if (args.length > 1 && args[0] == "-a") {
             algo = args[1];
         }
 
@@ -46,6 +46,7 @@ public class Client {
 
             int nRecs = 0;
             int counter = 0;
+            // int Availables = 0;
             JobSpec jobSpec = new JobSpec();
             ServerSpec scheduled = new ServerSpec();
             List<ServerSpec> servers = new ArrayList<ServerSpec>();
@@ -54,7 +55,7 @@ public class Client {
             while (true) {
                 String response = in.readLine();
                 // System.out.println(response);
-
+                // Greeting request
                 if (request.equals(HELO) && response.equals(OK)) {
                     String username = System.getProperty("user.name");
 
@@ -62,17 +63,18 @@ public class Client {
                     send(out, request);
                     continue;
                 }
-
+                // Authen request
                 if (request.startsWith(AUTH) && response.equals(OK)) {
                     servers = Parser.parseServer();
+                    // System.out.println(servers);
 
-                    servers = Scheduler.sortAsc(servers);
+                    // servers = Scheduler.sortAsc(servers);
 
                     request = REDY;
                     send(out, request);
                     continue;
                 }
-
+                // Receiving and handling jobs
                 if (request.equals(REDY)) {
                     if (response.equals(NONE)) {
                         request = QUIT;
@@ -81,13 +83,13 @@ public class Client {
 
                         if (job[0].equals(JOBN)) {
                             jobSpec = Parser.parseJob(job);
-                            
-                            if (algo == "wf" || algo == "bf"){
-                                request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
-                            }
-                            else if (algo == "ff"){
-                                request = GETS + " Avail " + job[4] + " " + job[5] + " " + job[6];
-                            }
+
+                            // if (algo == "wf" || algo == "bf"){
+                            // request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
+                            // }
+                            // else if (algo == "ff"){
+                            request = GETS + " Avail " + job[4] + " " + job[5] + " " + job[6];
+                            // }
                         }
                     }
                     send(out, request);
@@ -108,50 +110,85 @@ public class Client {
 
                 if (request.equals(OK)) {
                     if (response.equals(DOT)) {
+                        if (nRecs == 0) {
+                            request = GETS + " Capable " + jobSpec.getCore() + " " + jobSpec.getMemory();
+                            // + " " + jobSpec.getDisk();
+                            // scheduled = Scheduler.bestFit(servers, jobSpec.getCore());
+                            // request = GETS + "All";
+                        } else {
+                            scheduled = Scheduler.bestFit(capables, jobSpec.getCore());
+                            capables.clear();
+                            counter = 0;
+                            request = SCHD + " " + jobSpec.getJobID() + " " + scheduled.getType() + " "
+                                    + scheduled.getId();
+                        }
                         // if (nRecs == servers.size()) {
-                        //     scheduled = Scheduler.allToLargest(servers);
+                        // scheduled = Scheduler.allToLargest(servers);
                         // } else {
-                        //     scheduled = Scheduler.allToLargest(capables);
+                        // scheduled = Scheduler.allToLargest(capables);
                         // }
-                        if (algo == "wf"){
-                            scheduled = Scheduler.worstFit(capables, jobSpec.getCore());
-                        }
-                        else if (algo == "bf"){
-                            // scheduled = Scheduler
-                        } 
-                        else if (algo == "ff"){
-                            
-                        }
-                        scheduled = Scheduler.toCapabSpec(capables);
-                        capables.clear();
-                        counter = 0;
+                        // if (algo == "wf"){
+                        // scheduled = Scheduler.worstFit(capables, jobSpec.getCore());
+                        // }
+                        // else if (algo == "bf"){
+                        // // scheduled = Scheduler
+                        // }
+                        // else if (algo == "ff"){
 
-                        request = SCHD + " " + jobSpec.getJobID() + " " + scheduled.getType() + " " + scheduled.getId();
+                        // }
+
                     } else {
-                        String[] serverInfo = response.split("\\s+");
 
-                        for (ServerSpec server : servers) {
-                            if (server.getType().equals(serverInfo[0])
-                                    && server.getId() == Integer.parseInt(serverInfo[1])) {
-                                if (serverInfo.length == 9) {
-                                    server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
-                                            Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]));
-                                } else {
-                                    server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
-                                            Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]),
-                                            Integer.parseInt(serverInfo[9]), Integer.parseInt(serverInfo[10]),
-                                            Integer.parseInt(serverInfo[11]), Integer.parseInt(serverInfo[12]),
-                                            Integer.parseInt(serverInfo[13]), Integer.parseInt(serverInfo[14]));
+                        // System.out.println(ser);
+                        String[] serverInfo = response.split("\\s+");
+                        // System.out.print(counter);
+                        for (int i = 0; i < serverInfo.length; i++) {
+                            for (ServerSpec server : servers) {
+                                if (server.getType().equals(serverInfo[0])
+                                        && server.getId() == Integer.parseInt(serverInfo[1])) {
+                                    if (serverInfo.length == 9)
+                                        if (serverInfo.length == 9) {
+                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                                                    Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]));
+                                        } else {
+                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                                                    Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]),
+                                                    Integer.parseInt(serverInfo[9]), Integer.parseInt(serverInfo[10]),
+                                                    Integer.parseInt(serverInfo[11]), Integer.parseInt(serverInfo[12]),
+                                                    Integer.parseInt(serverInfo[13]), Integer.parseInt(serverInfo[14]));
+                                        }
+                                    capables.add(server);
+                                    // System.out.println(server);
                                 }
-                                capables.add(server);
                             }
                         }
+
+                        // System.out.println("333");
+
+                        // for (ServerSpec server : servers) {
+                        // if (server.getType().equals(serverInfo[0])
+                        // && server.getId() == Integer.parseInt(serverInfo[1])) {
+                        // if (serverInfo.length == 9) {
+                        // server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                        // Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]));
+                        // } else {
+                        // server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                        // Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]),
+                        // Integer.parseInt(serverInfo[9]), Integer.parseInt(serverInfo[10]),
+                        // Integer.parseInt(serverInfo[11]), Integer.parseInt(serverInfo[12]),
+                        // Integer.parseInt(serverInfo[13]), Integer.parseInt(serverInfo[14]));
+                        // }
+                        // capables.add(server);
+                        // }
+                        // }
                         counter++;
                         if (counter < nRecs) {
                             continue;
                         }
                     }
+
                     send(out, request);
+
                     continue;
                 }
 
@@ -162,6 +199,7 @@ public class Client {
                 }
 
                 if ((request.equals(QUIT) && response.equals(QUIT)) || response.startsWith(ERR)) {
+                    System.out.println(response);
                     break;
                 }
             }

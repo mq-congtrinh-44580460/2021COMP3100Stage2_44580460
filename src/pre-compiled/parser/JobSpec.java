@@ -1,6 +1,8 @@
 package parser;
 
 public class JobSpec {
+    //0: submitted, 1:waiting, 2: running, 3: suspended, 4: completed, 5: pre-empted, 6: failed, 7: killed
+    private String state;
     private int submitTime;
     private int jobID;
     private int estRuntime;
@@ -19,6 +21,14 @@ public class JobSpec {
         this.core = core;
         this.memory = memory;
         this.disk = disk;
+    }
+
+    public void setState(String state){
+        this.state = state;
+    }
+
+    public String getState(){
+        return this.state;
     }
 
     public int getSubmitTime() {

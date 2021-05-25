@@ -25,6 +25,7 @@ public class Scheduler {
     // Helper funtion: Sort asc
     // Algo used: bubble sort
     public static List<ServerSpec> sortAsc(List<ServerSpec> servers){
+        // System.out.println(servers);
         int i, j;
         int n = servers.size();
         for (i = 0; i < n-1; i++)     
@@ -66,22 +67,20 @@ public class Scheduler {
         if (servers == null || servers.isEmpty()) {
             return null;
         }
-        ServerSpec bestFit = null;
-        ServerSpec resourceFit = servers.get(0);
+        // System.out.print(servers);
+        ServerSpec bestFit = servers.get(0);
+        // ServerSpec resourceFit = servers.get(0);
         for (ServerSpec server: servers){
-            if (server.getCoreCount() >= requiredCount && server.getCoreCount() <= bestFit.getCoreCount()){
-                resourceFit = server;
-            }
-            if (server.getState() == "Available" && server.getCoreCount() >= requiredCount && server.getCoreCount() <= bestFit.getCoreCount()){
+            if (server.getCoreCount() <= bestFit.getCoreCount()){
                 bestFit = server;
             }
+            // if (server.getState() == "Available" && server.getCoreCount() >= requiredCount && server.getCoreCount() <= bestFit.getCoreCount()){
+            //     bestFit = server;
+            // }
         }
-        if (bestFit != null){
-            return bestFit;
-        }
-        else{
-            return resourceFit;
-        }
+        
+        return bestFit;
+        
     }
 
     // Algorithm Worst Fit:

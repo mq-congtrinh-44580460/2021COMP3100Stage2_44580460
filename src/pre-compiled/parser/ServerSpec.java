@@ -2,6 +2,7 @@ package parser;
 
 public class ServerSpec {
     private int id;
+    //0: inactive, 1: booting, 2: idle, 3: active, 4: unavailable
     private String state;
     private int currentStartTime;
     private int waitingJobs;
