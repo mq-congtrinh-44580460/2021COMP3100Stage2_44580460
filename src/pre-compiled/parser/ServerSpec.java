@@ -20,6 +20,7 @@ public class ServerSpec {
     private int mttr;
     private int madf;
     private int lastStartTime;
+    private int estimatedRuntime; 
 
     public ServerSpec() {
 
@@ -42,6 +43,7 @@ public class ServerSpec {
         this.currentStartTime = currentStartTime;
         this.waitingJobs = waitingJobs;
         this.runningJobs = runningJobs;
+        // this.estimatedRuntime = estimatedRuntime; 
     }
 
     public void setState(String state, int currentStartTime, int waitingJobs, int runningJobs, int failures,
@@ -56,6 +58,15 @@ public class ServerSpec {
         this.mttr = mttr;
         this.madf = madf;
         this.lastStartTime = lastStartTime;
+        // this.estimatedRuntime = estimatedRuntime;
+    }
+
+    public void setEstimatedRuntime(int estimatedRuntime){
+        this.estimatedRuntime = estimatedRuntime;
+    }
+
+    public int getEstimatedRuntime(){
+        return this.estimatedRuntime;
     }
 
     public int getId() {

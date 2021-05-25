@@ -2,6 +2,7 @@ package scheduler;
 
 import java.util.*;
 import parser.ServerSpec;
+import parser.JobSpec;
 
 public class Scheduler {
     public static ServerSpec allToLargest(List<ServerSpec> servers) {
@@ -63,22 +64,24 @@ public class Scheduler {
     // -- Memory Efficient. The operating system allocates the job minimum possible space in the memory, making memory management very efficient.
     // Cons:
     // -- It is a Slow Process. Checking the whole memory for each job makes the working of the operating system very slow. It takes a lot of time to complete the work.
-    public static ServerSpec bestFit(List<ServerSpec> servers, int requiredCount){
+    public static ServerSpec bestFit(List<ServerSpec> servers, JobSpec job){
         if (servers == null || servers.isEmpty()) {
             return null;
         }
         // System.out.print(servers);
         ServerSpec bestFit = servers.get(0);
+        // int shortestTime = bestFit.getEstimatedRuntime;
         // ServerSpec resourceFit = servers.get(0);
         for (ServerSpec server: servers){
-            if (server.getCoreCount() <= bestFit.getCoreCount()){
+            // if (server.getCoreCount() <= bestFit.getCoreCount()){
+            if ((server.getEstimatedRuntime() < bestFit.getEstimatedRuntime()) && (server.getHourlyRate() < bestFit.getHourlyRate()))
                 bestFit = server;
             }
             // if (server.getState() == "Available" && server.getCoreCount() >= requiredCount && server.getCoreCount() <= bestFit.getCoreCount()){
             //     bestFit = server;
             // }
-        }
         
+        bestFit.setEstimatedRuntime(bestFit.getEstimatedRuntime() + job.getEstRuntime());
         return bestFit;
         
     }

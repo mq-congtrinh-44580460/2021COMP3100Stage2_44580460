@@ -51,6 +51,7 @@ public class Client {
             ServerSpec scheduled = new ServerSpec();
             List<ServerSpec> servers = new ArrayList<ServerSpec>();
             List<ServerSpec> capables = new ArrayList<ServerSpec>();
+            List<JobSpec> jobs = new ArrayList<JobSpec>();
 
             while (true) {
                 String response = in.readLine();
@@ -83,6 +84,7 @@ public class Client {
 
                         if (job[0].equals(JOBN)) {
                             jobSpec = Parser.parseJob(job);
+                            jobs.add(jobSpec);
 
                             // if (algo == "wf" || algo == "bf"){
                             // request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
@@ -111,12 +113,18 @@ public class Client {
                 if (request.equals(OK)) {
                     if (response.equals(DOT)) {
                         if (nRecs == 0) {
-                            request = GETS + " Capable " + jobSpec.getCore() + " " + jobSpec.getMemory();
-                            // + " " + jobSpec.getDisk();
+                            request = GETS + " Capable " + jobSpec.getCore() + " " + jobSpec.getMemory()
+                            + " " + jobSpec.getDisk();
                             // scheduled = Scheduler.bestFit(servers, jobSpec.getCore());
                             // request = GETS + "All";
                         } else {
-                            scheduled = Scheduler.bestFit(capables, jobSpec.getCore());
+                            scheduled = Scheduler.bestFit(capables, jobSpec);
+                            for (ServerSpec server : servers){
+                                if (server.getType().equals(scheduled.getType())
+                                        && server.getId() == scheduled.getId()){
+                                            server = scheduled;
+                                        }
+                            }
                             capables.clear();
                             counter = 0;
                             request = SCHD + " " + jobSpec.getJobID() + " " + scheduled.getType() + " "
