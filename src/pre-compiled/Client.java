@@ -69,7 +69,7 @@ public class Client {
                     servers = Parser.parseServer();
                     // System.out.println(servers);
 
-                    // servers = Scheduler.sortAsc(servers);
+                    servers = Scheduler.sortAsc(servers);
 
                     request = REDY;
                     send(out, request);
@@ -90,7 +90,7 @@ public class Client {
                             // request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
                             // }
                             // else if (algo == "ff"){
-                            request = GETS + " Avail " + job[4] + " " + job[5] + " " + job[6];
+                            request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
                             // }
                         }
                     }
@@ -156,10 +156,10 @@ public class Client {
                                         && server.getId() == Integer.parseInt(serverInfo[1])) {
                                     if (serverInfo.length == 9)
                                         if (serverInfo.length == 9) {
-                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]), Integer.parseInt(serverInfo[4]),
                                                     Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]));
                                         } else {
-                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]), Integer.parseInt(serverInfo[4]),
                                                     Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]),
                                                     Integer.parseInt(serverInfo[9]), Integer.parseInt(serverInfo[10]),
                                                     Integer.parseInt(serverInfo[11]), Integer.parseInt(serverInfo[12]),

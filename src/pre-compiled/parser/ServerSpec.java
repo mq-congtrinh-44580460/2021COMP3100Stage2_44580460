@@ -21,6 +21,7 @@ public class ServerSpec {
     private int madf;
     private int lastStartTime;
     private int estimatedRuntime; 
+    private int currentCore;
 
     public ServerSpec() {
 
@@ -36,19 +37,22 @@ public class ServerSpec {
         this.coreCount = coreCount;
         this.memory = memory;
         this.disk = disk;
+        this.currentCore = coreCount;
     }
 
-    public void setState(String state, int currentStartTime, int waitingJobs, int runningJobs) {
+    public void setState(String state, int currentStartTime, int currentCore, int waitingJobs, int runningJobs) {
         this.state = state;
+        this.currentCore = currentCore;
         this.currentStartTime = currentStartTime;
         this.waitingJobs = waitingJobs;
         this.runningJobs = runningJobs;
         // this.estimatedRuntime = estimatedRuntime; 
     }
 
-    public void setState(String state, int currentStartTime, int waitingJobs, int runningJobs, int failures,
+    public void setState(String state, int currentStartTime, int currentCore, int waitingJobs, int runningJobs, int failures,
             int totalFailTime, int mttf, int mttr, int madf, int lastStartTime) {
         this.state = state;
+        this.currentCore = currentCore;
         this.currentStartTime = currentStartTime;
         this.waitingJobs = waitingJobs;
         this.runningJobs = runningJobs;
@@ -67,6 +71,10 @@ public class ServerSpec {
 
     public int getEstimatedRuntime(){
         return this.estimatedRuntime;
+    }
+
+    public int getCurrentCore(){
+        return this.currentCore;
     }
 
     public int getId() {
