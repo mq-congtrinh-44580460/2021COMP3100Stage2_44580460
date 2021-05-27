@@ -31,3 +31,5 @@ ds-system.xml
 ds-jobs.xml
 
 *.diff
+
+*.class

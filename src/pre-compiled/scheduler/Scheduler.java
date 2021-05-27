@@ -39,24 +39,6 @@ public class Scheduler {
         return servers;
     }
 
-    // Algorithm First Fit:
-    //Pros:
-    // -- It is fast in processing. As the processor allocates the nearest available memory partition to the job, it is very fast in execution.
-    // Cons:
-    // -- It wastes a lot of memory. The processor ignores if the size of partition allocated to the job is very large as compared to the size of job or not.
-    public static ServerSpec firstFit(List<ServerSpec> servers, int requiredCount){
-        if (servers == null || servers.isEmpty()) {
-            return null;
-        }
-
-        for (ServerSpec s : servers) {
-            if (s.getCoreCount() >= requiredCount){
-                return s;
-            }
-        }
-        return null;
-    }
-
     // Algorithm Best Fit:
     //Pros:
     // -- Memory Efficient. The operating system allocates the job minimum possible space in the memory, making memory management very efficient.
@@ -72,16 +54,20 @@ public class Scheduler {
         // ServerSpec resourceFit = servers.get(0);
         for (ServerSpec server: servers){
             // if (server.getCoreCount() <= bestFit.getCoreCount()){
-            if ((server.getRunningJobs() == 0) && (server.getWaitingJobs() == 0)){
+            if ((server.getRunningJobs() == 0) || (server.getWaitingJobs() == 0)){
+                server.setEstimatedRuntime(server.getEstimatedRuntime() + job.getEstRuntime());
                 return server;
-            }else {
-                if ((server.getEstimatedRuntime() < bestFit.getEstimatedRuntime() + 100) && (server.getHourlyRate() <= bestFit.getHourlyRate())){
-                    bestFit = server;
-                }
-                if ((server.getEstimatedRuntime() < bestFit.getEstimatedRuntime() - 700) &&(server.getCurrentCore() < bestFit.getCurrentCore()) && (server.getHourlyRate() <= bestFit.getHourlyRate())){
-                    bestFit = server;
-                }
             }
+                if (((job.getSubmitTime() > server.getEstimatedRuntime()) && (server.getEstimatedRuntime() < bestFit.getEstimatedRuntime() + job.getEstRuntime()/100*20) && (server.getHourlyRate() <= bestFit.getHourlyRate())
+                
+                )){
+                    bestFit = server;
+                }
+                else
+                if ((server.getCurrentCore() < bestFit.getCurrentCore()) || (server.getHourlyRate() <= bestFit.getHourlyRate())){
+                    bestFit = server;
+                }
+            
         }
             // if (server.getState() == "Available" && server.getCoreCount() >= requiredCount && server.getCoreCount() <= bestFit.getCoreCount()){
             //     bestFit = server;
@@ -92,33 +78,6 @@ public class Scheduler {
         
     }
 
-    // Algorithm Worst Fit:
-    //Pros:
-    // -- Since this process chooses the largest hole/partition, therefore there will be large internal fragmentation. Now, this internal fragmentation will be quite big so that other small processes can also be placed in that leftover partition. 
-    // Cons:
-    // -- It is a slow process because it traverses all the partitions in the memory and then selects the largest partition among all the partitions, which is a time-consuming process.
-    public static ServerSpec worstFit(List<ServerSpec> servers, int requiredCount){
-        if (servers == null || servers.isEmpty()) {
-            return null;
-        }
-        ServerSpec worstFit = servers.get(0);
-        ServerSpec resourceFit = servers.get(0);
-        for (ServerSpec server: servers){
-            if (server.getCoreCount() >= requiredCount && server.getCoreCount() <= resourceFit.getCoreCount()){
-                resourceFit = server;
-            }
-            if (server.getState() == "Available" && server.getCoreCount() >= requiredCount && server.getCoreCount() <= worstFit.getCoreCount()){
-                worstFit = server;
-            }
-        }
-        if (worstFit != null){
-            return worstFit;
-        }
-        else{
-            return resourceFit;
-        }
-        
-    }
 
 
 }
