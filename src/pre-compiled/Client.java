@@ -30,10 +30,10 @@ public class Client {
 
     public static void main(String[] args) throws Exception {
         Socket s = null;
-        String algo = "";
-        if (args.length > 1 && args[0] == "-a") {
-            algo = args[1];
-        }
+        // String algo = "";
+        // if (args.length > 1 && args[0] == "-a") {
+        // algo = args[1];
+        // }
 
         try {
             s = new Socket(DEFAULT_HOST, DEFAULT_PORT);
@@ -67,8 +67,8 @@ public class Client {
                 // Authen request
                 if (request.startsWith(AUTH) && response.equals(OK)) {
                     servers = Parser.parseServer();
-                    // System.out.println(servers);
-
+                    
+                    //Sort all the servers in ascending order
                     servers = Scheduler.sortAsc(servers);
 
                     request = REDY;
@@ -86,18 +86,15 @@ public class Client {
                             jobSpec = Parser.parseJob(job);
                             jobs.add(jobSpec);
 
-                            // if (algo == "wf" || algo == "bf"){
-                            // request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
-                            // }
-                            // else if (algo == "ff"){
-                            request = GETS + " Capable " + job[4] + " " + job[5] + " " + job[6];
-                            // }
+                            // First is to use available server
+                            request = GETS + " Avail " + job[4] + " " + job[5] + " " + job[6];
+
                         }
                     }
                     send(out, request);
                     continue;
                 }
-
+                //Parse the data response
                 if (request.startsWith(GETS)) {
                     String[] data = response.split("\\s+");
 
@@ -113,41 +110,28 @@ public class Client {
                 if (request.equals(OK)) {
                     if (response.equals(DOT)) {
                         if (nRecs == 0) {
-                            request = GETS + " Capable " + jobSpec.getCore() + " " + jobSpec.getMemory()
-                            + " " + jobSpec.getDisk();
+                            // Capable is used when there is no available servers
+                            request = GETS + " Capable " + jobSpec.getCore() + " " + jobSpec.getMemory() + " "
+                                    + jobSpec.getDisk();
                             // scheduled = Scheduler.bestFit(servers, jobSpec.getCore());
                             // request = GETS + "All";
                         } else {
-                            scheduled = Scheduler.bestFit(capables, jobSpec);
-                            for (ServerSpec server : servers){
+                            scheduled = Scheduler.advFF(capables, jobSpec);
+                            for (ServerSpec server : servers) {
                                 if (server.getType().equals(scheduled.getType())
-                                        && server.getId() == scheduled.getId()){
-                                            server = scheduled;
-                                        }
+                                        && server.getId() == scheduled.getId()) {
+                                    server = scheduled;
+                                }
                             }
                             capables.clear();
                             counter = 0;
                             request = SCHD + " " + jobSpec.getJobID() + " " + scheduled.getType() + " "
                                     + scheduled.getId();
                         }
-                        // if (nRecs == servers.size()) {
-                        // scheduled = Scheduler.allToLargest(servers);
-                        // } else {
-                        // scheduled = Scheduler.allToLargest(capables);
-                        // }
-                        // if (algo == "wf"){
-                        // scheduled = Scheduler.worstFit(capables, jobSpec.getCore());
-                        // }
-                        // else if (algo == "bf"){
-                        // // scheduled = Scheduler
-                        // }
-                        // else if (algo == "ff"){
-
-                        // }
 
                     } else {
 
-                        // System.out.println(ser);
+                        // Parsing either available or capable servers to update servers' states
                         String[] serverInfo = response.split("\\s+");
                         // System.out.print(counter);
                         for (int i = 0; i < serverInfo.length; i++) {
@@ -155,40 +139,25 @@ public class Client {
                                 if (server.getType().equals(serverInfo[0])
                                         && server.getId() == Integer.parseInt(serverInfo[1])) {
                                     if (serverInfo.length == 9)
+                                        // Non-failure parsing
                                         if (serverInfo.length == 9) {
-                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]), Integer.parseInt(serverInfo[4]),
-                                                    Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]));
+                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                                                    Integer.parseInt(serverInfo[4]), Integer.parseInt(serverInfo[7]),
+                                                    Integer.parseInt(serverInfo[8]));
                                         } else {
-                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]), Integer.parseInt(serverInfo[4]),
-                                                    Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]),
-                                                    Integer.parseInt(serverInfo[9]), Integer.parseInt(serverInfo[10]),
-                                                    Integer.parseInt(serverInfo[11]), Integer.parseInt(serverInfo[12]),
-                                                    Integer.parseInt(serverInfo[13]), Integer.parseInt(serverInfo[14]));
+                                            // Failure parsing
+                                            server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
+                                                    Integer.parseInt(serverInfo[4]), Integer.parseInt(serverInfo[7]),
+                                                    Integer.parseInt(serverInfo[8]), Integer.parseInt(serverInfo[9]),
+                                                    Integer.parseInt(serverInfo[10]), Integer.parseInt(serverInfo[11]),
+                                                    Integer.parseInt(serverInfo[12]), Integer.parseInt(serverInfo[13]),
+                                                    Integer.parseInt(serverInfo[14]));
                                         }
                                     capables.add(server);
                                     // System.out.println(server);
                                 }
                             }
                         }
-
-                        // System.out.println("333");
-
-                        // for (ServerSpec server : servers) {
-                        // if (server.getType().equals(serverInfo[0])
-                        // && server.getId() == Integer.parseInt(serverInfo[1])) {
-                        // if (serverInfo.length == 9) {
-                        // server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
-                        // Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]));
-                        // } else {
-                        // server.setState(serverInfo[2], Integer.parseInt(serverInfo[3]),
-                        // Integer.parseInt(serverInfo[7]), Integer.parseInt(serverInfo[8]),
-                        // Integer.parseInt(serverInfo[9]), Integer.parseInt(serverInfo[10]),
-                        // Integer.parseInt(serverInfo[11]), Integer.parseInt(serverInfo[12]),
-                        // Integer.parseInt(serverInfo[13]), Integer.parseInt(serverInfo[14]));
-                        // }
-                        // capables.add(server);
-                        // }
-                        // }
                         counter++;
                         if (counter < nRecs) {
                             continue;

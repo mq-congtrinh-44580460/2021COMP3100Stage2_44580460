@@ -1,0 +1,1 @@
+javac Client.java parser/JobSpec.java parser/Parser.java parser/ServerSpec.java scheduler/Scheduler.java
