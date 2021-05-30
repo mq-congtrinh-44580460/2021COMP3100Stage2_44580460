@@ -39,41 +39,37 @@ public class Scheduler {
         return servers;
     }
 
-    // Algorithm Best Fit:
-    //Pros:
-    // -- Memory Efficient. The operating system allocates the job minimum possible space in the memory, making memory management very efficient.
-    // Cons:
-    // -- It is a Slow Process. Checking the whole memory for each job makes the working of the operating system very slow. It takes a lot of time to complete the work.
-    public static ServerSpec bestFit(List<ServerSpec> servers, JobSpec job){
+    // Algorithm Advance First Fit:
+    public static ServerSpec advFF(List<ServerSpec> servers, JobSpec job){
         if (servers == null || servers.isEmpty()) {
             return null;
         }
-        // System.out.print(servers);
+        //First fit approach if there are available servers that are capable of perform the job
         ServerSpec bestFit = servers.get(0);
-        // int shortestTime = bestFit.getEstimatedRuntime;
-        // ServerSpec resourceFit = servers.get(0);
+        if (bestFit.getState() == "inactive"){
+            //Calculate and set the estimated run timem for server when booting up
+            bestFit.setEstimatedRuntime(bestFit.getEstimatedRuntime() + bestFit.getBootupTime() + job.getSubmitTime() + job.getEstRuntime());
+            return bestFit;
+        }
+        //Once all the server is started , this code will search for capable server that can perform concurrencies
         for (ServerSpec server: servers){
-            // if (server.getCoreCount() <= bestFit.getCoreCount()){
-            if ((server.getRunningJobs() == 0) || (server.getWaitingJobs() == 0)){
-                server.setEstimatedRuntime(server.getEstimatedRuntime() + job.getEstRuntime());
+            //concurrencies search
+            if (((job.getSubmitTime() < server.getEstimatedRuntime()) && (server.getEstimatedRuntime() != -1) && (server.getCurrentCore() >= job.getCore())) 
+                ){
+                    if (server.getEstimatedRuntime() < job.getSubmitTime() + job.getEstRuntime())
+                        server.setEstimatedRuntime(server.getEstimatedRuntime() + (server.getEstimatedRuntime() - job.getSubmitTime() - job.getEstRuntime()));
                 return server;
             }
-                if (((job.getSubmitTime() > server.getEstimatedRuntime()) && (server.getEstimatedRuntime() < bestFit.getEstimatedRuntime() + job.getEstRuntime()/100*20) && (server.getHourlyRate() <= bestFit.getHourlyRate())
-                
-                )){
-                    bestFit = server;
-                }
-                else
-                if ((server.getCurrentCore() < bestFit.getCurrentCore()) || (server.getHourlyRate() <= bestFit.getHourlyRate())){
-                    bestFit = server;
-                }
+            else
+            //Find capable server that finish earliest or cheapest
+            if (((server.getEstimatedRuntime() < bestFit.getEstimatedRuntime()) || (server.getHourlyRate() <= bestFit.getHourlyRate()))){
+                bestFit = server;
+            }
             
         }
-            // if (server.getState() == "Available" && server.getCoreCount() >= requiredCount && server.getCoreCount() <= bestFit.getCoreCount()){
-            //     bestFit = server;
-            // }
-        
-        bestFit.setEstimatedRuntime(bestFit.getEstimatedRuntime() + job.getEstRuntime());
+            
+        //Calculate and set the estimated run timem for selected server
+        bestFit.setEstimatedRuntime(bestFit.getEstimatedRuntime() + job.getSubmitTime() + job.getEstRuntime());
         return bestFit;
         
     }

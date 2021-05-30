@@ -38,6 +38,7 @@ public class ServerSpec {
         this.memory = memory;
         this.disk = disk;
         this.currentCore = coreCount;
+        this.estimatedRuntime = -1;
     }
 
     public void setState(String state, int currentStartTime, int currentCore, int waitingJobs, int runningJobs) {
